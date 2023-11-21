@@ -315,12 +315,27 @@ int ImageMaxval(Image img) { ///
 
 /// Pixel stats
 /// Find the minimum and maximum gray levels in image.
+/// Requires: min and max must not be NULL,
+///           and the values pointed to must be initialized.
+///
 /// On return,
 /// *min is set to the minimum gray level in the image,
 /// *max is set to the maximum.
 void ImageStats(Image img, uint8* min, uint8* max) { ///
   assert (img != NULL);
-  // Insert your code here!
+  assert (min != NULL && max != NULL);
+
+  for (int y = 0; y < img->height; ++y) {
+    for (int x = 0; x < img->width; ++x) {
+      const uint8 pixelValue = ImageGetPixel(img, x, y);
+      if (pixelValue < *min) {
+        *min = pixelValue;
+      }
+      if (pixelValue > *max) {
+        *max = pixelValue;
+      }
+    }
+  }
 }
 
 /// Check if pixel position (x,y) is inside img.
