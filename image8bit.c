@@ -397,7 +397,12 @@ void ImageSetPixel(Image img, int x, int y, uint8 level) { ///
 /// resulting in a "photographic negative" effect.
 void ImageNegative(Image img) { ///
   assert (img != NULL);
-  // Insert your code here!
+
+  for (int y = 0; y < img->height; ++y) {
+    for (int x = 0; x < img->width; ++x) {
+      ImageSetPixel(img, x, y, img->maxval - ImageGetPixel(img, x, y));
+    }
+  }
 }
 
 /// Apply threshold to image.
@@ -405,7 +410,27 @@ void ImageNegative(Image img) { ///
 /// all pixels with level>=thr to white (maxval).
 void ImageThreshold(Image img, uint8 thr) { ///
   assert (img != NULL);
-  // Insert your code here!
+
+  for (int y = 0; y < img->height; ++y) {
+    for (int x = 0; x < img->width; ++x) {
+      ImageSetPixel(
+          img, x, y, ImageGetPixel(img, x, y) < thr ? 0 : img->maxval);
+    }
+  }
+}
+
+/// Clamp x between min and max.
+/// If x < min, returns min.
+/// If x > max, returns max.
+/// Otherwise returns x.
+static double clampDouble(double x, double min, double max) {
+  if (x > max) {
+    return max;
+  }
+  if (x < min) {
+    return min;
+  }
+  return x;
 }
 
 /// Brighten image by a factor.
@@ -415,9 +440,19 @@ void ImageThreshold(Image img, uint8 thr) { ///
 void ImageBrighten(Image img, double factor) { ///
   assert (img != NULL);
   // ? assert (factor >= 0.0);
-  // Insert your code here!
-}
 
+  for (int y = 0; y < img->height; ++y) {
+    for (int x = 0; x < img->width; ++x) {
+      const double brightenedValue = clampDouble(
+          factor * (double)ImageGetPixel(img, x, y), 0.0, (double)img->maxval);
+
+      // Since `round` from `math.h` is inaccessible, we resort to adding 0.5.
+      // This does not work for negative numbers, but `clampDouble` makes sure
+      // we never have a negative number.
+      ImageSetPixel(img, x, y, (uint8)(brightenedValue + 0.5));
+    }
+  }
+}
 
 /// Geometric transformations
 
