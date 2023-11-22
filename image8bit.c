@@ -536,9 +536,24 @@ Image ImageMirror(Image img) { ///
 Image ImageCrop(Image img, int x, int y, int w, int h) { ///
   assert (img != NULL);
   assert (ImageValidRect(img, x, y, w, h));
-  // Insert your code here!
-}
 
+  const Image cropped = ImageCreate(w, h, img->maxval);
+  if (cropped == NULL) {
+    // TODO: Error reporting
+    return NULL;
+  }
+
+  for (int j = 0; j < h; ++j) {
+    for (int i = 0; i < w; ++i) {
+      // TODO: Should this map pixel values based on the images' max values?
+      // Tests don't scream at us, but they don't test images with different
+      // max values.
+      ImageSetPixel(cropped, i, j, ImageGetPixel(img, x + i, y + j));
+    }
+  }
+
+  return cropped;
+}
 
 /// Operations on two images
 
