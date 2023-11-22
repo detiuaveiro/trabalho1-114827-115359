@@ -210,6 +210,8 @@ void ImageDestroy(Image* imgp) { ///
     free(image);
     *imgp = NULL;
   }
+
+  assert (*imgp == NULL);
 }
 
 /// PGM file operations
@@ -315,9 +317,11 @@ int ImageMaxval(Image img) { ///
 
 /// Pixel stats
 /// Find the minimum and maximum gray levels in image.
-/// Requires: min and max must not be NULL,
-///           and the values pointed to must be initialized.
-///
+///   img: image to 
+/// Requires: img, min and max must not be NULL,
+///           values pointed to by min and max must be initialized.
+/// Ensures: The image is not modified
+/// 
 /// On return,
 /// *min is set to the minimum gray level in the image,
 /// *max is set to the maximum.
@@ -345,9 +349,14 @@ int ImageValidPos(Image img, int x, int y) { ///
 }
 
 /// Check if rectangular area (x,y,w,h) is completely inside img.
-/// Requires: x, y, width and height must be non-negative.
+/// Requires: img must not be NULL.
+///           x, y, width and height must be non-negative.
 int ImageValidRect(Image img, int x, int y, int w, int h) {
   assert (img != NULL);
+  assert (x >= 0);
+  assert (y >= 0);
+  assert (w >= 0);
+  assert (h >= 0);
 
   return ImageValidPos(img, x, y) && x + w <= img->width
          && y + h <= img->height;
@@ -396,6 +405,9 @@ void ImageSetPixel(Image img, int x, int y, uint8 level) { ///
 
 
 /// Transform image to negative image.
+///   img : the image to modify.
+/// Requires: img must not be NULL.
+/// 
 /// This transforms dark pixels to light pixels and vice-versa,
 /// resulting in a "photographic negative" effect.
 void ImageNegative(Image img) { ///
@@ -409,6 +421,10 @@ void ImageNegative(Image img) { ///
 }
 
 /// Apply threshold to image.
+///   img : the image to modify.
+///   thr : the threshold to check to the image's pixels against.
+/// Requires: img must not be NULL.
+/// 
 /// Transform all pixels with level<thr to black (0) and
 /// all pixels with level>=thr to white (maxval).
 void ImageThreshold(Image img, uint8 thr) { ///
@@ -437,6 +453,9 @@ static double clampDouble(double x, double min, double max) {
 }
 
 /// Brighten image by a factor.
+///   img : the image to brighten.
+/// Requires: img must not be NULL.
+/// 
 /// Multiply each pixel level by a factor, but saturate at maxval.
 /// This will brighten the image if factor>1.0 and
 /// darken the image if factor<1.0.
@@ -472,6 +491,8 @@ void ImageBrighten(Image img, double factor) { ///
 /// Rotate an image.
 /// Returns a rotated version of the image.
 /// The rotation is 90 degrees anti-clockwise.
+///   img : the image to rotate.
+/// Requires: img must not be NULL.
 /// Ensures: The original img is not modified.
 /// 
 /// On success, a new image is returned.
@@ -496,7 +517,9 @@ Image ImageRotate(Image img) { ///
 }
 
 /// Mirror an image = flip left-right.
+///   img : the image to mirror.
 /// Returns a mirrored version of the image.
+/// Requires: img must not be NULL.
 /// Ensures: The original img is not modified.
 /// 
 /// On success, a new image is returned.
@@ -551,6 +574,7 @@ Image ImageCrop(Image img, int x, int y, int w, int h) { ///
     }
   }
 
+  assert (cropped->width == w && cropped->height == h);
   return cropped;
 }
 
@@ -559,7 +583,9 @@ Image ImageCrop(Image img, int x, int y, int w, int h) { ///
 /// Paste an image into a larger image.
 /// Paste img2 into position (x, y) of img1.
 /// This modifies img1 in-place: no allocation involved.
-/// Requires: img2 must fit inside img1 at position (x, y).
+/// Requires: img1 and img2 must not be NULL.
+///           img2 must fit inside img1 at position (x, y).
+/// Ensures: img2 is not modified.
 void ImagePaste(Image img1, int x, int y, Image img2) { ///
   assert (img1 != NULL);
   assert (img2 != NULL);
@@ -576,7 +602,9 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
 /// Blend an image into a larger image.
 /// Blend img2 into position (x, y) of img1.
 /// This modifies img1 in-place: no allocation involved.
-/// Requires: img2 must fit inside img1 at position (x, y).
+/// Requires: img1 and img must not be NULL.
+///           img2 must fit inside img1 at position (x, y).
+/// Ensures: img2 is not modified,
 /// alpha usually is in [0.0, 1.0], but values outside that interval
 /// may provide interesting effects.  Over/underflows should saturate.
 void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
@@ -597,6 +625,9 @@ void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
 }
 
 /// Compare an image to a subimage of a larger image.
+/// Requires: img1 and img2 must not be NULL.
+///           img2 must fit inside img1 at position (x, y).
+/// Ensures: The images are not modified.
 /// Returns 1 (true) if img2 matches subimage of img1 at pos (x, y).
 /// Returns 0, otherwise.
 int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
@@ -608,6 +639,9 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
 
 /// Locate a subimage inside another image.
 /// Searches for img2 inside img1.
+/// Requires: img1, img2, px and py  must not be NULL.
+/// Ensures: The images are not modified.
+/// 
 /// If a match is found, returns 1 and matching position is set in vars (*px, *py).
 /// If no match is found, returns 0 and (*px, *py) are left untouched.
 int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
