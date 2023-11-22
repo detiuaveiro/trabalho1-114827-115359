@@ -565,7 +565,13 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
   assert (img1 != NULL);
   assert (img2 != NULL);
   assert (ImageValidRect(img1, x, y, img2->width, img2->height));
-  // Insert your code here!
+
+  for (int j = 0; j < img2->height; ++j) {
+    for (int i = 0; i < img2->width; ++i) {
+      const uint8 pixel = ImageGetPixel(img2, i, j);
+      ImageSetPixel(img1, x + i, y + j, pixel);
+    }
+  }
 }
 
 /// Blend an image into a larger image.
@@ -578,7 +584,17 @@ void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
   assert (img1 != NULL);
   assert (img2 != NULL);
   assert (ImageValidRect(img1, x, y, img2->width, img2->height));
-  // Insert your code here!
+
+  for (int j = 0; j < img2->height; ++j) {
+    for (int i = 0; i < img2->width; ++i) {
+      const uint8 pixel1 = ImageGetPixel(img1, x + i, y + j);
+      const uint8 pixel2 = ImageGetPixel(img2, i, j);
+      const double blendedPixel = (1 - alpha) * (double) pixel1 + alpha * (double) pixel2;
+
+      // Add 0.5 to pixel value just like in ImageBrighten.
+      ImageSetPixel(img1, x + i, y + j, (uint8) (blendedPixel + 0.5));
+    }
+  }
 }
 
 /// Compare an image to a subimage of a larger image.
