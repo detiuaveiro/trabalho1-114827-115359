@@ -446,13 +446,12 @@ void ImageBrighten(Image img, double factor) { ///
 
   for (int y = 0; y < img->height; ++y) {
     for (int x = 0; x < img->width; ++x) {
-      const double brightenedValue = clampDouble(
-          factor * (double)ImageGetPixel(img, x, y), 0.0, (double)img->maxval);
+      const double brightenedValue = factor * (double)ImageGetPixel(img, x, y);
 
       // Since `round` from `math.h` is inaccessible, we resort to adding 0.5.
       // This does not work for negative numbers, but `clampDouble` makes sure
       // we never have a negative number.
-      ImageSetPixel(img, x, y, (uint8)(brightenedValue + 0.5));
+      ImageSetPixel(img, x, y, (uint8)clampDouble(brightenedValue + 0.5, 0.0, (double)img->maxval));
     }
   }
 }
@@ -592,7 +591,7 @@ void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
       const double blendedPixel = (1 - alpha) * (double) pixel1 + alpha * (double) pixel2;
 
       // Add 0.5 to pixel value just like in ImageBrighten.
-      ImageSetPixel(img1, x + i, y + j, (uint8) (blendedPixel + 0.5));
+      ImageSetPixel(img1, x + i, y + j, (uint8) clampDouble(blendedPixel + 0.5, 0.0, (double)img1->maxval));
     }
   }
 }
