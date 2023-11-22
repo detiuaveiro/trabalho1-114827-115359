@@ -480,7 +480,20 @@ void ImageBrighten(Image img, double factor) { ///
 /// On failure, returns NULL and errno/errCause are set accordingly.
 Image ImageRotate(Image img) { ///
   assert (img != NULL);
-  // Insert your code here!
+
+  const Image rotated = ImageCreate(img->height, img->width, img->maxval);
+  if (rotated == NULL) {
+    // TODO: Error reporting
+    return NULL;
+  }
+
+  for (int y = 0; y < img->height; ++y) {
+    for (int x = 0; x < img->width; ++x) {
+      ImageSetPixel(rotated, y, rotated->height - 1 - x, ImageGetPixel(img, x, y));
+    }
+  }
+
+  return rotated;
 }
 
 /// Mirror an image = flip left-right.
@@ -492,7 +505,20 @@ Image ImageRotate(Image img) { ///
 /// On failure, returns NULL and errno/errCause are set accordingly.
 Image ImageMirror(Image img) { ///
   assert (img != NULL);
-  // Insert your code here!
+
+  const Image mirrored = ImageCreate(img->width, img->height, img->maxval);
+  if (mirrored == NULL) {
+    // TODO: Error reporting
+    return NULL;
+  }
+
+  for (int y = 0; y < img->height; ++y) {
+    for (int x = 0; x < img->width; ++x) {
+      ImageSetPixel(mirrored, mirrored->width - 1 - x, y, ImageGetPixel(img, x, y));
+    }
+  }
+
+  return mirrored;
 }
 
 /// Crop a rectangular subimage from img.
