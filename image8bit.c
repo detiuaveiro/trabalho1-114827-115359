@@ -173,8 +173,7 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
   assert (0 < maxval && maxval <= PixMax);
 
   const Image image = (Image)malloc(sizeof(struct image));
-  if (image == NULL) {
-    // TODO: Add error reporting
+  if (check(image == NULL, "Cannot allocate memory for image")) {
     return NULL;
   }
 
@@ -186,8 +185,7 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
       .pixel = (uint8*)calloc(width * height, sizeof(uint8)),
   };
 
-  if (image->pixel == NULL) {
-    // TODO: Add error reporting
+  if (check(image->pixel == NULL, "Cannot allocate memory for pixel data")) {
     free(image);
     return NULL;
   }
@@ -502,8 +500,7 @@ Image ImageRotate(Image img) { ///
   assert (img != NULL);
 
   const Image rotated = ImageCreate(img->height, img->width, img->maxval);
-  if (rotated == NULL) {
-    // TODO: Error reporting
+  if (check(rotated == NULL, "Cannot allocate memory for rotated image")) {
     return NULL;
   }
 
@@ -529,8 +526,7 @@ Image ImageMirror(Image img) { ///
   assert (img != NULL);
 
   const Image mirrored = ImageCreate(img->width, img->height, img->maxval);
-  if (mirrored == NULL) {
-    // TODO: Error reporting
+  if (check(mirrored == NULL, "Cannot allocate memory for mirrored image")) {
     return NULL;
   }
 
@@ -560,8 +556,7 @@ Image ImageCrop(Image img, int x, int y, int w, int h) { ///
   assert (ImageValidRect(img, x, y, w, h));
 
   const Image cropped = ImageCreate(w, h, img->maxval);
-  if (cropped == NULL) {
-    // TODO: Error reporting
+  if (check(cropped == NULL, "Cannot allocate memory for cropped image")) {
     return NULL;
   }
 
