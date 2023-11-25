@@ -147,12 +147,17 @@ void ImageInit(void) { ///
   InstrCalibrate();
   InstrName[0] = "pixmem";  // InstrCount[0] will count pixel array acesses
   // Name other counters here...
-  
+  InstrName[1] = "pixmemwr";  // InstrName[1] will count pixel array writes
+  InstrName[2] = "pixmemre";  // InstrName[2] will count pixel array reads
+  InstrName[3] = "pixcomp";  // InstrName[3] will count pixel comparisons
 }
 
 // Macros to simplify accessing instrumentation counters:
 #define PIXMEM InstrCount[0]
 // Add more macros here...
+#define PIXMEMWR InstrCount[1]
+#define PIXMEMRE InstrCount[2]
+#define PIXCOMP InstrCount[3]
 
 // TIP: Search for PIXMEM or InstrCount to see where it is incremented!
 
@@ -181,7 +186,6 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
       .width = width,
       .height = height,
       .maxval = maxval,
-      // calloc initializes allocated array to 0
       .pixel = (uint8*)calloc(width * height, sizeof(uint8)),
   };
 
@@ -189,6 +193,9 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
     free(image);
     return NULL;
   }
+  // calloc initializes allocated array to 0, so count all the writes
+  PIXMEM += (unsigned long) (width * height);
+  PIXMEMWR += (unsigned long) (width * height);
 
   return image;
 }
@@ -382,6 +389,7 @@ uint8 ImageGetPixel(Image img, int x, int y) { ///
   assert (img != NULL);
   assert (ImageValidPos(img, x, y));
   PIXMEM += 1;  // count one pixel access (read)
+  PIXMEMRE += 1;  // count one pixel read
   return img->pixel[G(img, x, y)];
 } 
 
@@ -390,6 +398,7 @@ void ImageSetPixel(Image img, int x, int y, uint8 level) { ///
   assert (img != NULL);
   assert (ImageValidPos(img, x, y));
   PIXMEM += 1;  // count one pixel access (store)
+  PIXMEMWR += 1;  // count one pixel store
   img->pixel[G(img, x, y)] = level;
 } 
 
@@ -653,6 +662,7 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
 
   for (int j = 0; j < minInt(img1->height - y, img2->width); ++j) {
     for (int i = 0; i < minInt(img1->width - x, img2->height); ++i) {
+      PIXCOMP += 1;
       if (ImageGetPixel(img1, x + i, y + j) != ImageGetPixel(img2, i, j)) {
         return 0;
       }
