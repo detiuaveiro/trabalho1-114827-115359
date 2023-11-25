@@ -660,8 +660,8 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
   assert (img2 != NULL);
   assert (ImageValidPos(img1, x, y));
 
-  for (int j = 0; j < minInt(img1->height - y, img2->width); ++j) {
-    for (int i = 0; i < minInt(img1->width - x, img2->height); ++i) {
+  for (int j = 0; j < minInt(img1->height - y, img2->height); ++j) {
+    for (int i = 0; i < minInt(img1->width - x, img2->width); ++i) {
       PIXCOMP += 1;
       if (ImageGetPixel(img1, x + i, y + j) != ImageGetPixel(img2, i, j)) {
         return 0;
