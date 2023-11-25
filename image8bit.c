@@ -436,6 +436,14 @@ void ImageThreshold(Image img, uint8 thr) { ///
   }
 }
 
+/// Return the minimum integer between x and y.
+static int minInt(int x, int y) {
+  if (x < y) {
+    return x;
+  }
+  return y;
+}
+
 /// Clamp x between min and max.
 /// If x < min, returns min.
 /// If x > max, returns max.
@@ -643,7 +651,16 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
   assert (img1 != NULL);
   assert (img2 != NULL);
   assert (ImageValidPos(img1, x, y));
-  // Insert your code here!
+
+  for (int j = 0; j < minInt(img1->height - y, img2->width); ++j) {
+    for (int i = 0; i < minInt(img1->width - x, img2->height); ++i) {
+      if (ImageGetPixel(img1, x + i, y + j) != ImageGetPixel(img2, i, j)) {
+        return 0;
+      }
+    }
+  }
+
+  return 1;
 }
 
 /// Locate a subimage inside another image.
@@ -656,7 +673,21 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
 int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
   assert (img1 != NULL);
   assert (img2 != NULL);
-  // Insert your code here!
+  assert (ImageValidRect(img1, 0, 0, img2->width, img2->height));
+  assert (px != NULL);
+  assert (py != NULL);
+
+  for (int j = 0; j <= img1->height - img2->height; ++j) {
+    for (int i = 0; i <= img1->width - img2->width; ++i) {
+      if (ImageMatchSubImage(img1, i, j, img2)) {
+        *px = i;
+        *py = j;
+        return 1;
+      }
+    }
+  }
+
+  return 0;
 }
 
 
