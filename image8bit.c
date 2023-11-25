@@ -440,6 +440,20 @@ void ImageThreshold(Image img, uint8 thr) { ///
 /// If x < min, returns min.
 /// If x > max, returns max.
 /// Otherwise returns x.
+static int clampInt(int x, int min, int max) {
+  if (x < min) {
+    return min;
+  }
+  if (x > max) {
+    return max;
+  }
+  return x;
+}
+
+/// Clamp x between min and max.
+/// If x < min, returns min.
+/// If x > max, returns max.
+/// Otherwise returns x.
 static double clampDouble(double x, double min, double max) {
   if (x > max) {
     return max;
@@ -650,9 +664,44 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 
 /// Blur an image by a applying a (2dx+1)x(2dy+1) mean filter.
 /// Each pixel is substituted by the mean of the pixels in the rectangle
+/// Requires: img must not be NULL.
+///           dx and dy must not be negative.
 /// [x-dx, x+dx]x[y-dy, y+dy].
 /// The image is changed in-place.
 void ImageBlur(Image img, int dx, int dy) { ///
-  // Insert your code here!
+  assert (img != NULL);
+  assert (dx >= 0);
+  assert (dy >= 0);
+
+  Image blurred = ImageCreate(img->width, img->height, img->maxval);
+  for (int y = 0; y < img->height; ++y) {
+    for (int x = 0; x < img->width; ++x) {
+      int sum = 0;
+
+      const int start_x = clampInt(x - dx, 0, img->width - 1);
+      const int end_x = clampInt(x + dx, 0, img->width - 1);
+      const int start_y = clampInt(y - dy, 0, img->height - 1);
+      const int end_y = clampInt(y + dy, 0, img->height - 1);
+
+      for (int j = start_y; j <= end_y; ++j) {
+        for (int i = start_x; i <= end_x; ++i) {
+          sum += ImageGetPixel(
+            img,
+            i,
+            j
+          );
+        }
+      }
+
+      ImageSetPixel(blurred,
+        x,
+        y,
+        (uint8)((double) sum / (double) ((end_x - start_x + 1) * (end_y - start_y + 1)) + 0.5)
+      );
+    }
+  }
+
+  ImagePaste(img, 0, 0, blurred);
+  ImageDestroy(&blurred);
 }
 
