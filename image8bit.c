@@ -714,6 +714,10 @@ void ImageBlur(Image img, int dx, int dy) { ///
   assert (dy >= 0);
 
   Image blurred = ImageCreate(img->width, img->height, img->maxval);
+  if (check(blurred == NULL, "Cannot allocate memory for blurred image")) {
+    return;
+  }
+
   for (int y = 0; y < img->height; ++y) {
     for (int x = 0; x < img->width; ++x) {
       int sum = 0;
