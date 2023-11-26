@@ -146,7 +146,6 @@ static int check(int condition, const char* failmsg) {
 void ImageInit(void) { ///
   InstrCalibrate();
   InstrName[0] = "pixmem";  // InstrCount[0] will count pixel array acesses
-  // Name other counters here...
   InstrName[1] = "pixmemwr";  // InstrName[1] will count pixel array writes
   InstrName[2] = "pixmemre";  // InstrName[2] will count pixel array reads
   InstrName[3] = "pixcomp";  // InstrName[3] will count pixel comparisons
@@ -154,7 +153,6 @@ void ImageInit(void) { ///
 
 // Macros to simplify accessing instrumentation counters:
 #define PIXMEM InstrCount[0]
-// Add more macros here...
 #define PIXMEMWR InstrCount[1]
 #define PIXMEMRE InstrCount[2]
 #define PIXCOMP InstrCount[3]
@@ -439,8 +437,8 @@ void ImageThreshold(Image img, uint8 thr) { ///
 
   for (int y = 0; y < img->height; ++y) {
     for (int x = 0; x < img->width; ++x) {
-      ImageSetPixel(
-          img, x, y, ImageGetPixel(img, x, y) < thr ? 0 : img->maxval);
+      const uint8 pixel = ImageGetPixel(img, x, y);
+      ImageSetPixel(img, x, y, pixel < thr ? 0 : img->maxval);
     }
   }
 }
@@ -499,7 +497,8 @@ void ImageBrighten(Image img, double factor) { ///
       // Since `round` from `math.h` is inaccessible, we resort to adding 0.5.
       // This does not work for negative numbers, but `clampDouble` makes sure
       // we never have a negative number.
-      ImageSetPixel(img, x, y, (uint8)clampDouble(brightenedValue + 0.5, 0.0, (double)img->maxval));
+      const uint8 level = (uint8)clampDouble(brightenedValue + 0.5, 0.0, (double)img->maxval);
+      ImageSetPixel(img, x, y, level);
     }
   }
 }
@@ -593,9 +592,6 @@ Image ImageCrop(Image img, int x, int y, int w, int h) { ///
 
   for (int j = 0; j < h; ++j) {
     for (int i = 0; i < w; ++i) {
-      // TODO: Should this map pixel values based on the images' max values?
-      // Tests don't scream at us, but they don't test images with different
-      // max values.
       ImageSetPixel(cropped, i, j, ImageGetPixel(img, x + i, y + j));
     }
   }
@@ -642,10 +638,11 @@ void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
     for (int i = 0; i < img2->width; ++i) {
       const uint8 pixel1 = ImageGetPixel(img1, x + i, y + j);
       const uint8 pixel2 = ImageGetPixel(img2, i, j);
-      const double blendedPixel = (1 - alpha) * (double) pixel1 + alpha * (double) pixel2;
+      const double blendedPixel = (1 - alpha) * (double)pixel1 + alpha * (double)pixel2;
 
       // Add 0.5 to pixel value just like in ImageBrighten.
-      ImageSetPixel(img1, x + i, y + j, (uint8) clampDouble(blendedPixel + 0.5, 0.0, (double)img1->maxval));
+      const uint8 level = (uint8)clampDouble(blendedPixel + 0.5, 0.0, (double)img1->maxval);
+      ImageSetPixel(img1, x + i, y + j, level);
     }
   }
 }
